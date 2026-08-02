@@ -57,8 +57,8 @@ export function Settings({
   return (
     <div className="scrim" role="dialog" aria-modal="true" aria-label={t('settings', lang)} onClick={onClose}>
       <div className="modal modal--settings" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontSize: 17, margin: 0 }}>{t('settings', lang)}</h2>
+        <div className="modal__header">
+          <h2>{t('settings', lang)}</h2>
           <button type="button" className="btn btn--ghost" aria-label={t('close', lang)} ref={closeRef} onClick={onClose}>
             <X size={18} aria-hidden />
           </button>

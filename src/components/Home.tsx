@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages, Eye, EyeOff, ShieldCheck, Zap, Pencil } from 'lucide-react'
 import { t, type Lang } from '../lib/strings'
-import { usePersistentState } from '../hooks/usePersistentState'
 import { isValidRoomCode, normalizeRoomInput } from '../engine/roomCode'
 import type { StrategySetting } from './Settings'
 import { Settings } from './Settings'
@@ -43,7 +42,6 @@ export function Home({
   const [error, setError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [history, setHistory] = useState<HistoryEntry[]>(() => getHistory())
-  const [onboardingDismissed, setOnboardingDismissed] = usePersistentState('pt-onboarding-dismissed', false)
   const [editingName, setEditingName] = useState(false)
 
   function join() {
@@ -65,7 +63,7 @@ export function Home({
   const showNamePrompt = editingName || !nicknameConfirmed
 
   return (
-    <div className="shell">
+    <div className="shell shell--home">
       <header className="shell__header">
         <div className="brand">
           <span className="brand__mark" aria-hidden>
@@ -89,7 +87,18 @@ export function Home({
         </div>
       </header>
 
-      <main className="shell__main">
+      <main className="shell__main home-grid">
+      <aside className="home-hero">
+        <h1 className="home-hero__title">{t('hero_title', lang)}</h1>
+        <p className="home-hero__sub">{t('hero_sub', lang)}</p>
+        <ol className="steps">
+          <li>{t('onboarding_step_1', lang)}</li>
+          <li>{t('onboarding_step_2', lang)}</li>
+          <li>{t('onboarding_step_3', lang)}</li>
+        </ol>
+      </aside>
+
+      <section className="home-actions">
       {!showNamePrompt ? (
         <div className="identity-row">
           <span className="identity-row__name">
@@ -120,25 +129,6 @@ export function Home({
             {t('continue', lang)}
           </button>
         </form>
-      ) : null}
-
-      {!onboardingDismissed ? (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <span style={{ fontWeight: 600 }}>{t('onboarding_title', lang)}</span>
-          <ol className="steps">
-            <li>{t('onboarding_step_1', lang)}</li>
-            <li>{t('onboarding_step_2', lang)}</li>
-            <li>{t('onboarding_step_3', lang)}</li>
-          </ol>
-          <button
-            type="button"
-            className="btn btn--ghost btn--sm"
-            style={{ alignSelf: 'flex-end' }}
-            onClick={() => setOnboardingDismissed(true)}
-          >
-            {t('got_it', lang)}
-          </button>
-        </div>
       ) : null}
 
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -210,6 +200,7 @@ export function Home({
       </div>
 
       <HistoryList lang={lang} entries={history} onClear={() => { clearHistory(); setHistory([]) }} />
+      </section>
       </main>
 
       <footer className="trust-footer">

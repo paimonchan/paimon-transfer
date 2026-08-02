@@ -615,7 +615,7 @@ export function Room({
   }
 
   return (
-    <div className="shell">
+    <div className="shell shell--room">
       <header className="shell__header">
         <button type="button" className="btn btn--ghost" aria-label={t('back', lang)} onClick={onLeave}>
           <ArrowLeft size={18} aria-hidden />

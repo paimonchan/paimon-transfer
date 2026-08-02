@@ -5,7 +5,14 @@ export type Lang = 'en' | 'id'
 
 const strings: Record<string, { en: string; id: string }> = {
   app_name: { en: 'Paimon Transfer', id: 'Paimon Transfer' },
-  onboarding_title: { en: 'How it works', id: 'Cara pakai' },
+  hero_title: {
+    en: 'Files, straight from one device to another.',
+    id: 'File langsung dari satu perangkat ke perangkat lain.',
+  },
+  hero_sub: {
+    en: 'No upload, no signup — share a room code and the files travel directly, end-to-end encrypted.',
+    id: 'Tanpa upload, tanpa daftar — bagikan kode room dan file terkirim langsung, terenkripsi end-to-end.',
+  },
   onboarding_step_1: {
     en: 'Open this page on both devices',
     id: 'Buka halaman ini di kedua perangkat',
@@ -18,7 +25,6 @@ const strings: Record<string, { en: string; id: string }> = {
     en: 'Files go straight between devices — nothing is stored',
     id: 'File terkirim langsung antar perangkat — tidak ada yang disimpan',
   },
-  got_it: { en: 'Got it', id: 'Ngerti' },
   create_room: { en: 'Create a room', id: 'Buat room' },
   join_room: { en: 'Join room', id: 'Gabung room' },
   room_code_placeholder: { en: 'PT-A1B2C3', id: 'PT-A1B2C3' },
