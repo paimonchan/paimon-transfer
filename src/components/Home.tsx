@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages, Eye, EyeOff, ShieldCheck, Zap } from 'lucide-react'
+import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages, Eye, EyeOff, ShieldCheck, Zap, Pencil } from 'lucide-react'
 import { t, type Lang } from '../lib/strings'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { isValidRoomCode, normalizeRoomInput } from '../engine/roomCode'
@@ -90,6 +90,18 @@ export function Home({
       </header>
 
       <main className="shell__main">
+      {!showNamePrompt ? (
+        <div className="identity-row">
+          <span className="identity-row__name">
+            {t('appearing_as', lang)} <strong>{nickname}</strong>
+          </span>
+          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setEditingName(true)}>
+            <Pencil size={13} aria-hidden />
+            {t('edit', lang)}
+          </button>
+        </div>
+      ) : null}
+
       {showNamePrompt ? (
         <form className="card" onSubmit={submitName} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <label htmlFor="nickname" style={{ fontWeight: 600 }}>

@@ -6,10 +6,6 @@ export type Lang = 'en' | 'id'
 const strings: Record<string, { en: string; id: string }> = {
   app_name: { en: 'Paimon Transfer', id: 'Paimon Transfer' },
   onboarding_title: { en: 'How it works', id: 'Cara pakai' },
-  onboarding_steps: {
-    en: 'Open on 2 devices → scan QR → files go straight, e2e encrypted',
-    id: 'Buka di 2 perangkat → scan QR → file langsung terkirim, terenkripsi e2e',
-  },
   onboarding_step_1: {
     en: 'Open this page on both devices',
     id: 'Buka halaman ini di kedua perangkat',
@@ -68,6 +64,12 @@ const strings: Record<string, { en: string; id: string }> = {
     id: 'atau ketuk untuk pilih dari perangkat ini',
   },
   copy_code: { en: 'Copy room code', id: 'Salin kode room' },
+  copy_link: { en: 'Copy invite link', id: 'Salin tautan undangan' },
+  appearing_as: { en: 'Appearing as', id: 'Tampil sebagai' },
+  edit: { en: 'Edit', id: 'Ubah' },
+  close: { en: 'Close', id: 'Tutup' },
+  section_profile: { en: 'Profile', id: 'Profil' },
+  section_network: { en: 'Network', id: 'Jaringan' },
   peer_left_room: { en: 'Left the room', id: 'Keluar room' },
   sent_to: { en: 'Sent to {peer}', id: 'Terkirim ke {peer}' },
   waiting_peer_alt: {
@@ -127,7 +129,7 @@ const strings: Record<string, { en: string; id: string }> = {
   settings: { en: 'Settings', id: 'Pengaturan' },
   language: { en: 'Language', id: 'Bahasa' },
   strategy: { en: 'Signaling', id: 'Sinyal' },
-  strategy_auto: { en: 'Auto (Nostr → MQTT)', id: 'Otomatis (Nostr → MQTT)' },
+  strategy_auto: { en: 'Auto', id: 'Otomatis' },
   strategy_nostr: { en: 'Nostr only', id: 'Nostr saja' },
   strategy_mqtt: { en: 'MQTT only', id: 'MQTT saja' },
   relays: { en: 'Nostr relays', id: 'Relay Nostr' },

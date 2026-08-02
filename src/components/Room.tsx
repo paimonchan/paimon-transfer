@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { QrCode, Copy, Check, ArrowLeft, Send, Settings as SettingsIcon, Lock, ShieldCheck } from 'lucide-react'
+import { QrCode, Copy, Check, ArrowLeft, Send, Settings as SettingsIcon, Lock, ShieldCheck, Link2 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import JSZip from 'jszip'
 import { t, type Lang } from '../lib/strings'
@@ -77,6 +77,7 @@ export function Room({
     return strategySetting === 'auto' ? 'nostr' : strategySetting
   })
   const [copied, setCopied] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
@@ -603,6 +604,16 @@ export function Room({
     }
   }
 
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(roomUrl)
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 1500)
+    } catch {
+      // clipboard unavailable — non-fatal
+    }
+  }
+
   return (
     <div className="shell">
       <header className="shell__header">
@@ -666,6 +677,10 @@ export function Room({
             <span className="spinner" aria-hidden />
             {[t('waiting_peer', lang), t('share_room', lang), t('waiting_peer_alt', lang)][waitCopy]}
           </div>
+          <button type="button" className="btn btn--primary" style={{ alignSelf: 'stretch' }} onClick={copyLink}>
+            {copiedLink ? <Check size={18} aria-hidden /> : <Link2 size={18} aria-hidden />}
+            {copiedLink ? t('copied', lang) : t('copy_link', lang)}
+          </button>
         </div>
       ) : null}
 
@@ -832,9 +847,9 @@ export function Room({
             <div className="mono" style={{ textAlign: 'center', fontSize: 18 }}>
               {code}
             </div>
-            <button type="button" className="btn btn--primary" onClick={copyCode}>
-              <Copy size={18} aria-hidden />
-              {copied ? t('copied', lang) : t('copy', lang)}
+            <button type="button" className="btn btn--primary" onClick={copyLink}>
+              {copiedLink ? <Check size={18} aria-hidden /> : <Link2 size={18} aria-hidden />}
+              {copiedLink ? t('copied', lang) : t('copy_link', lang)}
             </button>
             <button type="button" className="btn btn--ghost" onClick={() => setQrOpen(false)}>
               {t('back', lang)}
