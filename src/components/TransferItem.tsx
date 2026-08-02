@@ -1,5 +1,4 @@
 import {
-  FileText,
   CheckCircle2,
   XCircle,
   Ban,
@@ -10,7 +9,7 @@ import {
 import { t, type Lang } from '../lib/strings'
 import { formatBytes, formatSpeed, formatEta } from '../lib/format'
 import type { Transfer } from '../engine/types'
-import { QuotaIndicator } from './QuotaIndicator'
+import { FileIcon } from './FileIcon'
 
 interface TransferItemProps {
   transfer: Transfer
@@ -35,24 +34,37 @@ export function TransferItem({
   const { status, direction, file, progress, speedBps } = transfer
   const DirIcon = direction === 'send' ? ArrowUpRight : ArrowDownLeft
   const pct = Math.round(progress * 100)
+  const done = status === 'done'
 
   return (
-    <div className="transfer-card" data-status={status}>
+    <div className={`transfer-card${done ? ' transfer-card--done' : ''}`} data-status={status}>
       <div className="transfer-card__row">
         <span className="transfer-card__icon" aria-hidden>
-          <FileText size={18} />
+          {done ? <CheckCircle2 size={18} style={{ color: 'var(--ok)' }} /> : <FileIcon name={file.name} mime={file.mime} />}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="transfer-card__name" title={file.name}>
             {file.name}
           </div>
           <div className="transfer-card__meta">
-            <DirIcon size={12} aria-hidden />
-            {formatBytes(file.size)} · {direction === 'send' ? t('sending', lang) : t('receiving', lang)}{' '}
-            {peerName}
+            {done ? (
+              <>
+                <CheckCircle2 size={12} aria-hidden style={{ color: 'var(--ok)' }} />
+                {direction === 'send'
+                  ? `${t('sent_to', lang, { peer: peerName || t('unknown_peer', lang, { id: '…' }) })} · ${formatBytes(file.size)}`
+                  : t('transfer_done', lang, { size: formatBytes(file.size) })}
+              </>
+            ) : (
+              <>
+                <DirIcon size={12} aria-hidden />
+                {formatBytes(file.size)} ·{' '}
+                {direction === 'send'
+                  ? t('sending_to', lang, { peer: peerName || t('unknown_peer', lang, { id: '…' }) })
+                  : t('receiving_from', lang, { peer: peerName || t('unknown_peer', lang, { id: '…' }) })}
+              </>
+            )}
           </div>
         </div>
-        <QuotaIndicator quota={transfer.quota} sizeBytes={file.size} lang={lang} />
       </div>
 
       {status === 'streaming' ? (

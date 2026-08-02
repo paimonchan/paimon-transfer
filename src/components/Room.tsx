@@ -80,6 +80,13 @@ export function Room({
   const [qrOpen, setQrOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
+  // rotating waiting copy — keeps the empty state alive instead of static text
+  const [waitCopy, setWaitCopy] = useState(0)
+
+  useEffect(() => {
+    const iv = setInterval(() => setWaitCopy((i) => (i + 1) % 3), 4500)
+    return () => clearInterval(iv)
+  }, [])
 
   const connRef = useRef<RoomConnection | null>(null)
   const fileRefs = useRef(new Map<string, File>())
@@ -618,6 +625,7 @@ export function Room({
             onClick={() => setLang(lang === 'en' ? 'id' : 'en')}
           >
             <Languages size={18} aria-hidden />
+            <span className="btn--lang-label">{lang === 'en' ? 'ID' : 'EN'}</span>
           </button>
           <button type="button" className="btn btn--ghost" aria-label={t('copy', lang)} onClick={copyCode}>
             <Copy size={18} aria-hidden />
@@ -632,6 +640,7 @@ export function Room({
         </div>
       </header>
 
+      <main className="shell__main">
       {inApp ? (
         <div className="banner" role="status">
           {t('inapp_banner', lang)}
@@ -639,24 +648,25 @@ export function Room({
       ) : null}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <span className="live-dot" aria-hidden />
+        <span className={`live-dot${onlinePeers.length > 0 ? '' : ' live-dot--off'}`} aria-hidden />
         <span className="badge">{t('peers', lang, { n: Object.values(peers).filter((p) => p.online).length })}</span>
         <span className="badge">{t('trust_e2e', lang)}</span>
       </div>
 
       {connectState === 'connecting' && Object.keys(peers).length === 0 ? (
         <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-          <div className="qr-chip">
-            <QRCodeSVG value={roomUrl} size={184} level="H" />
+          <div className="qr-pulse">
+            <div className="qr-chip">
+              <QRCodeSVG value={roomUrl} size={184} level="H" />
+            </div>
           </div>
           <div className="mono" style={{ fontSize: 24, fontWeight: 500 }}>
             {code}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 14 }}>
             <span className="spinner" aria-hidden />
-            {t('waiting_peer', lang)}
+            {[t('waiting_peer', lang), t('share_room', lang), t('waiting_peer_alt', lang)][waitCopy]}
           </div>
-          <div className="trust-line">{t('share_room', lang)}</div>
         </div>
       ) : null}
 
@@ -724,7 +734,18 @@ export function Room({
               {transferList.length > 1 ? (
                 <div className="batch-row">
                   <span className="batch-row__label">
-                    {t('batch_progress', lang, { done: doneCount, total: transferList.length, pct: overallPct })}
+                    {doneBytes > 0
+                      ? t('batch_progress', lang, {
+                          done: doneCount,
+                          total: transferList.length,
+                          transferred: formatBytes(doneBytes),
+                          totalSize: formatBytes(totalBytes),
+                        })
+                      : t('batch_queued', lang, {
+                          done: doneCount,
+                          total: transferList.length,
+                          totalSize: formatBytes(totalBytes),
+                        })}
                   </span>
                   <div className="progress-track">
                     <div className="progress-fill" style={{ transform: `scaleX(${overallPct / 100})` }} />
@@ -778,6 +799,7 @@ export function Room({
           ) : null}
         </>
       ) : null}
+      </main>
 
       {settingsOpen ? (
         <Settings

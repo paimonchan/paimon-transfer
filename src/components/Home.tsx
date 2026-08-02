@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages } from 'lucide-react'
+import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages, Eye, EyeOff } from 'lucide-react'
 import { t, type Lang } from '../lib/strings'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { isValidRoomCode, normalizeRoomInput } from '../engine/roomCode'
@@ -39,6 +39,7 @@ export function Home({
 }: HomeProps) {
   const [codeInput, setCodeInput] = useState('')
   const [passphrase, setPassphrase] = useState('')
+  const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [history, setHistory] = useState<HistoryEntry[]>(() => getHistory())
@@ -80,7 +81,7 @@ export function Home({
             onClick={() => setLang(lang === 'en' ? 'id' : 'en')}
           >
             <Languages size={18} aria-hidden />
-            {lang === 'en' ? 'ID' : 'EN'}
+            <span className="btn--lang-label">{lang === 'en' ? 'ID' : 'EN'}</span>
           </button>
           <button type="button" className="btn btn--ghost" aria-label={t('settings', lang)} onClick={() => setSettingsOpen(true)}>
             <SettingsIcon size={18} aria-hidden />
@@ -88,6 +89,7 @@ export function Home({
         </div>
       </header>
 
+      <main className="shell__main">
       {showNamePrompt ? (
         <form className="card" onSubmit={submitName} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <label htmlFor="nickname" style={{ fontWeight: 600 }}>
@@ -115,7 +117,7 @@ export function Home({
           <button
             type="button"
             className="btn btn--ghost btn--sm"
-            style={{ alignSelf: 'flex-start' }}
+            style={{ alignSelf: 'flex-end' }}
             onClick={() => setOnboardingDismissed(true)}
           >
             {t('got_it', lang)}
@@ -152,16 +154,27 @@ export function Home({
             <Lock size={12} aria-hidden />
             {t('passphrase_optional', lang)}
           </span>
-          <input
-            className="input"
-            type="password"
-            value={passphrase}
-            maxLength={64}
-            placeholder="••••••••"
-            onChange={(e) => setPassphrase(e.target.value)}
-            aria-label={t('passphrase_optional', lang)}
-          />
-          <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>{t('passphrase_hint', lang)}</span>
+          <div className="input-wrap">
+            <input
+              className="input input--with-toggle"
+              type={showPass ? 'text' : 'password'}
+              value={passphrase}
+              maxLength={64}
+              placeholder="••••••••"
+              onChange={(e) => setPassphrase(e.target.value)}
+              aria-label={t('passphrase_optional', lang)}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="input-toggle"
+              aria-label={showPass ? t('passphrase_hide', lang) : t('passphrase_show', lang)}
+              onClick={() => setShowPass((s) => !s)}
+            >
+              {showPass ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+            </button>
+          </div>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('passphrase_hint', lang)}</span>
         </label>
         <button type="button" className="btn" style={{ fontSize: 16 }} onClick={join}>
           <ArrowRight size={18} aria-hidden />
@@ -170,6 +183,7 @@ export function Home({
       </div>
 
       <HistoryList lang={lang} entries={history} onClear={() => { clearHistory(); setHistory([]) }} />
+      </main>
 
       <div className="trust-line">{t('trust_e2e', lang)}</div>
       <div className="trust-line">{t('trust_lan', lang)}</div>
