@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages, Eye, EyeOff } from 'lucide-react'
+import { Plus, ArrowRight, Lock, Settings as SettingsIcon, Languages, Eye, EyeOff, ShieldCheck, Zap } from 'lucide-react'
 import { t, type Lang } from '../lib/strings'
 import { usePersistentState } from '../hooks/usePersistentState'
 import { isValidRoomCode, normalizeRoomInput } from '../engine/roomCode'
@@ -111,9 +111,13 @@ export function Home({
       ) : null}
 
       {!onboardingDismissed ? (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <span style={{ fontWeight: 600 }}>{t('onboarding_title', lang)}</span>
-          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('onboarding_steps', lang)}</span>
+          <ol className="steps">
+            <li>{t('onboarding_step_1', lang)}</li>
+            <li>{t('onboarding_step_2', lang)}</li>
+            <li>{t('onboarding_step_3', lang)}</li>
+          </ol>
           <button
             type="button"
             className="btn btn--ghost btn--sm"
@@ -131,25 +135,40 @@ export function Home({
           {t('create_room', lang)}
         </button>
         <div className="or-divider">{t('join_room', lang)}</div>
-        <input
-          className="input mono"
-          placeholder={t('room_code_placeholder', lang)}
-          value={codeInput}
-          maxLength={9}
-          inputMode="text"
-          autoCapitalize="characters"
-          onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-          aria-label={t('room_code_placeholder', lang)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') join()
-          }}
-        />
+        <div className="join-row">
+          <input
+            className="input mono"
+            placeholder={t('room_code_placeholder', lang)}
+            value={codeInput}
+            maxLength={9}
+            inputMode="text"
+            autoCapitalize="characters"
+            onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+            aria-label={t('room_code_placeholder', lang)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') join()
+            }}
+          />
+          <button type="button" className="btn" onClick={join} aria-label={t('join_room', lang)}>
+            <ArrowRight size={18} aria-hidden />
+            {t('join_room', lang)}
+          </button>
+        </div>
         {error ? (
           <span role="alert" style={{ fontSize: 12, color: 'var(--danger)' }}>
             {error}
           </span>
         ) : null}
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
+        <label
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+            fontSize: 12,
+            borderTop: '1px solid var(--border)',
+            paddingTop: 12,
+          }}
+        >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--text-muted)' }}>
             <Lock size={12} aria-hidden />
             {t('passphrase_optional', lang)}
@@ -176,17 +195,21 @@ export function Home({
           </div>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('passphrase_hint', lang)}</span>
         </label>
-        <button type="button" className="btn" style={{ fontSize: 16 }} onClick={join}>
-          <ArrowRight size={18} aria-hidden />
-          {t('join_room', lang)}
-        </button>
       </div>
 
       <HistoryList lang={lang} entries={history} onClear={() => { clearHistory(); setHistory([]) }} />
       </main>
 
-      <div className="trust-line">{t('trust_e2e', lang)}</div>
-      <div className="trust-line">{t('trust_lan', lang)}</div>
+      <footer className="trust-footer">
+        <div className="trust-line">
+          <ShieldCheck size={15} aria-hidden />
+          {t('trust_e2e', lang)}
+        </div>
+        <div className="trust-line">
+          <Zap size={15} aria-hidden />
+          {t('trust_lan', lang)}
+        </div>
+      </footer>
 
       {settingsOpen ? (
         <Settings

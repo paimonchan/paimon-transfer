@@ -35,9 +35,10 @@ export function TransferItem({
   const DirIcon = direction === 'send' ? ArrowUpRight : ArrowDownLeft
   const pct = Math.round(progress * 100)
   const done = status === 'done'
+  const failed = status === 'failed'
 
   return (
-    <div className={`transfer-card${done ? ' transfer-card--done' : ''}`} data-status={status}>
+    <div className={`transfer-card pop-in${done ? ' transfer-card--done' : ''}${failed ? ' transfer-card--failed' : ''}`} data-status={status}>
       <div className="transfer-card__row">
         <span className="transfer-card__icon" aria-hidden>
           {done ? <CheckCircle2 size={18} style={{ color: 'var(--ok)' }} /> : <FileIcon name={file.name} mime={file.mime} />}
@@ -73,6 +74,9 @@ export function TransferItem({
         </div>
       ) : null}
 
+      {/* done state needs no status row — the green card + check icon + meta
+          line already say everything (avoids duplicated "Saved · 180 KB") */}
+      {done ? null : (
       <div className="transfer-card__status">
         {status === 'queued' ? (
           <span className="status-text" data-kind="muted">
@@ -117,13 +121,6 @@ export function TransferItem({
           </>
         ) : null}
 
-        {status === 'done' ? (
-          <span className="status-text" data-kind="ok">
-            <CheckCircle2 size={14} aria-hidden />
-            {t('transfer_done', lang, { size: formatBytes(file.size) })}
-          </span>
-        ) : null}
-
         {status === 'declined' ? (
           <span className="status-text" data-kind="muted">
             <Ban size={14} aria-hidden />
@@ -153,6 +150,7 @@ export function TransferItem({
           </>
         ) : null}
       </div>
+      )}
     </div>
   )
 }

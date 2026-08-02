@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { QrCode, Copy, ArrowLeft, Send, Languages, Settings as SettingsIcon, Lock } from 'lucide-react'
+import { QrCode, Copy, Check, ArrowLeft, Send, Settings as SettingsIcon, Lock, ShieldCheck } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import JSZip from 'jszip'
 import { t, type Lang } from '../lib/strings'
@@ -609,28 +609,22 @@ export function Room({
         <button type="button" className="btn btn--ghost" aria-label={t('back', lang)} onClick={onLeave}>
           <ArrowLeft size={18} aria-hidden />
         </button>
-        <span className="mono" style={{ fontSize: 18, fontWeight: 500 }}>
-          {code}
-          {passphrase ? (
-            <span className="badge" style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              <Lock size={11} aria-hidden style={{ verticalAlign: -1 }} /> {t('room_protected', lang)}
-            </span>
-          ) : null}
-        </span>
+        <button
+          type="button"
+          className="code-chip"
+          onClick={copyCode}
+          aria-label={t('copy_code', lang)}
+          title={t('copy_code', lang)}
+        >
+          <span className="code-chip__label">{code}</span>
+          {passphrase ? <Lock size={13} aria-label={t('room_protected', lang)} style={{ color: 'var(--text-faint)', flexShrink: 0 }} /> : null}
+          {copied ? (
+            <Check size={15} className="code-chip__icon code-chip__icon--ok" aria-hidden />
+          ) : (
+            <Copy size={15} className="code-chip__icon" aria-hidden />
+          )}
+        </button>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            type="button"
-            className="btn btn--ghost"
-            aria-label={lang === 'en' ? 'Bahasa Indonesia' : 'Switch to English'}
-            onClick={() => setLang(lang === 'en' ? 'id' : 'en')}
-          >
-            <Languages size={18} aria-hidden />
-            <span className="btn--lang-label">{lang === 'en' ? 'ID' : 'EN'}</span>
-          </button>
-          <button type="button" className="btn btn--ghost" aria-label={t('copy', lang)} onClick={copyCode}>
-            <Copy size={18} aria-hidden />
-            {copied ? t('copied', lang) : null}
-          </button>
           <button type="button" className="btn btn--ghost" aria-label={t('qr_title', lang)} onClick={() => setQrOpen(true)}>
             <QrCode size={18} aria-hidden />
           </button>
@@ -647,10 +641,15 @@ export function Room({
         </div>
       ) : null}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <span className={`live-dot${onlinePeers.length > 0 ? '' : ' live-dot--off'}`} aria-hidden />
-        <span className="badge">{t('peers', lang, { n: Object.values(peers).filter((p) => p.online).length })}</span>
-        <span className="badge">{t('trust_e2e', lang)}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <span className="badge">
+          <span className={`live-dot${onlinePeers.length > 0 ? '' : ' live-dot--off'}`} aria-hidden />
+          {t('peers', lang, { n: onlinePeers.length })}
+        </span>
+        <span className="badge">
+          <ShieldCheck size={12} aria-hidden />
+          {t('trust_e2e', lang)}
+        </span>
       </div>
 
       {connectState === 'connecting' && Object.keys(peers).length === 0 ? (
@@ -794,7 +793,10 @@ export function Room({
               <Send size={18} aria-hidden />
               {onlinePeers.length > 1
                 ? t('send_files_multi', lang, { n: queuedCount, m: onlinePeers.length })
-                : t('send_files', lang, { n: queuedCount, peer: firstPeer.name || peerName(firstPeer.id) })}
+                : t(queuedCount === 1 ? 'send_files_one' : 'send_files', lang, {
+                    n: queuedCount,
+                    peer: firstPeer.name || peerName(firstPeer.id),
+                  })}
             </button>
           ) : null}
         </>

@@ -1,4 +1,4 @@
-import { Zap, Globe, Lock } from 'lucide-react'
+import { Zap, Globe, Cable } from 'lucide-react'
 import { t, type Lang } from '../lib/strings'
 import { formatBytes } from '../lib/format'
 import type { QuotaState } from '../engine/types'
@@ -29,7 +29,7 @@ export function QuotaIndicator({ quota, sizeBytes, lang }: QuotaIndicatorProps) 
   }
   return (
     <span className="quota-badge" data-quota="unknown">
-      <Lock size={13} aria-hidden />
+      <Cable size={13} aria-hidden />
       {t('quota_unknown', lang)}
     </span>
   )

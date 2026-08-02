@@ -10,6 +10,18 @@ const strings: Record<string, { en: string; id: string }> = {
     en: 'Open on 2 devices → scan QR → files go straight, e2e encrypted',
     id: 'Buka di 2 perangkat → scan QR → file langsung terkirim, terenkripsi e2e',
   },
+  onboarding_step_1: {
+    en: 'Open this page on both devices',
+    id: 'Buka halaman ini di kedua perangkat',
+  },
+  onboarding_step_2: {
+    en: 'One creates a room, the other joins via QR or code',
+    id: 'Satu perangkat buat room, lainnya gabung via QR atau kode',
+  },
+  onboarding_step_3: {
+    en: 'Files go straight between devices — nothing is stored',
+    id: 'File terkirim langsung antar perangkat — tidak ada yang disimpan',
+  },
   got_it: { en: 'Got it', id: 'Ngerti' },
   create_room: { en: 'Create a room', id: 'Buat room' },
   join_room: { en: 'Join room', id: 'Gabung room' },
@@ -50,6 +62,13 @@ const strings: Record<string, { en: string; id: string }> = {
   peers: { en: 'Peers: {n}', id: 'Peer: {n}' },
   unknown_peer: { en: 'Peer {id}', id: 'Peer {id}' },
   dropzone_hint: { en: 'Drop files here or browse', id: 'Letakkan file di sini atau pilih' },
+  dropzone_title: { en: 'Drop files here', id: 'Letakkan file di sini' },
+  dropzone_sub: {
+    en: 'or tap to browse from this device',
+    id: 'atau ketuk untuk pilih dari perangkat ini',
+  },
+  copy_code: { en: 'Copy room code', id: 'Salin kode room' },
+  peer_left_room: { en: 'Left the room', id: 'Keluar room' },
   sent_to: { en: 'Sent to {peer}', id: 'Terkirim ke {peer}' },
   waiting_peer_alt: {
     en: 'Files go straight between devices — nothing is stored',
@@ -57,8 +76,10 @@ const strings: Record<string, { en: string; id: string }> = {
   },
   passphrase_show: { en: 'Show passphrase', id: 'Lihat frasa sandi' },
   passphrase_hide: { en: 'Hide passphrase', id: 'Sembunyikan frasa sandi' },
-  send_files: { en: 'Send {n} file(s) → {peer}', id: 'Kirim {n} file → {peer}' },
-  send_files_multi: { en: 'Send {n} file(s) to {m} peers', id: 'Kirim {n} file ke {m} peer' },
+  send_files: { en: 'Send {n} files → {peer}', id: 'Kirim {n} file → {peer}' },
+  send_files_one: { en: 'Send {n} file → {peer}', id: 'Kirim {n} file → {peer}' },
+  send_files_multi: { en: 'Send {n} files to {m} peers', id: 'Kirim {n} file ke {m} peer' },
+  queued: { en: 'Queued', id: 'Antre' },
   batch_progress: {
     en: '{done}/{total} files · {transferred} / {totalSize}',
     id: '{done}/{total} file · {transferred} / {totalSize}',

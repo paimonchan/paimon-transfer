@@ -44,8 +44,11 @@ export function Dropzone({ lang, onFiles }: DropzoneProps) {
       onDragLeave={() => setOver(false)}
       onDrop={onDrop}
     >
-      <UploadCloud size={28} aria-hidden />
-      <div>{t('dropzone_hint', lang)}</div>
+      <span className="dropzone__icon" aria-hidden>
+        <UploadCloud size={22} aria-hidden />
+      </span>
+      <div className="dropzone__title">{t('dropzone_title', lang)}</div>
+      <div className="dropzone__sub">{t('dropzone_sub', lang)}</div>
       <input
         ref={inputRef}
         type="file"

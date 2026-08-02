@@ -121,17 +121,20 @@ body {
   transition:
     background var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .btn:hover {
   box-shadow: var(--shadow-card-hover);
   background: var(--surface-raised);
+  transform: translateY(-1px);
 }
 
 .btn:active {
   background: var(--surface-press);
   box-shadow: none;
+  transform: translateY(0) scale(0.98);
 }
 
 .btn:focus-visible,
@@ -295,7 +298,7 @@ body {
 .steps {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -306,17 +309,32 @@ body {
   counter-increment: step;
   display: flex;
   gap: 10px;
-  align-items: baseline;
+  align-items: center;
   color: var(--text-muted);
   font-size: 14px;
 }
 
 .steps li::before {
   content: counter(step);
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--surface-raised);
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--accent);
-  min-width: 16px;
+  flex-shrink: 0;
+}
+
+/* ---- trust footer (home) ---- */
+
+.trust-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 2px 0;
 }
 
 .trust-line {
@@ -325,6 +343,11 @@ body {
   gap: 8px;
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.trust-line svg {
+  color: var(--text-faint);
+  flex-shrink: 0;
 }
 
 /* ---- passphrase reveal toggle ---- */
@@ -368,20 +391,30 @@ body {
   }
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--text-faint);
-  font-size: 13px;
+/* ---- enter animations (opacity/transform only — reduced-motion kills them) ---- */
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pop-in {
+  animation: pop-in var(--dur-base) var(--ease-out);
 }
 
 /* ---- modal ---- */
@@ -394,6 +427,7 @@ body {
   place-items: center;
   padding: 16px;
   z-index: 50;
+  animation: fade-in var(--dur-fast) var(--ease-out);
 }
 
 .modal {
@@ -407,6 +441,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  animation: pop-in var(--dur-base) var(--ease-out);
 }
 
 .qr-chip {
@@ -459,7 +494,13 @@ body {
   padding: 12px 14px;
 }
 
+/* peer left the room — keep the row visible but clearly inactive */
+.card--peer-offline {
+  opacity: 0.55;
+}
+
 .peer-avatar {
+  position: relative;
   display: grid;
   place-items: center;
   width: 32px;
@@ -467,6 +508,23 @@ body {
   border-radius: 8px;
   background: var(--surface-raised);
   color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* presence dot pinned to the avatar corner — icon + text elsewhere (1.4.1) */
+.peer-avatar__dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  background: var(--ok);
+}
+
+.peer-avatar__dot--off {
+  background: var(--text-faint);
 }
 
 .peer-lan {
@@ -509,16 +567,19 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 120px;
+  gap: 10px;
+  min-height: 148px;
+  padding: 20px;
   border: 2px dashed var(--border-strong);
   border-radius: 12px;
   color: var(--text-muted);
   font-size: 14px;
   cursor: pointer;
+  text-align: center;
   transition:
     border-color var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out);
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .dropzone:hover,
@@ -531,6 +592,33 @@ body {
   background: var(--surface);
   border-color: var(--accent);
   color: var(--text);
+  transform: scale(1.01);
+}
+
+.dropzone__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface-raised);
+  color: var(--accent);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.dropzone:hover .dropzone__icon,
+.dropzone--over .dropzone__icon {
+  transform: translateY(-2px);
+}
+
+.dropzone__title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dropzone__sub {
+  font-size: 12px;
+  color: var(--text-faint);
 }
 
 /* ---- transfer cards ---- */
@@ -550,6 +638,12 @@ body {
 .transfer-card--done {
   border-color: rgba(34, 197, 94, 0.35);
   background: rgba(34, 197, 94, 0.045);
+}
+
+/* failed transfer — subtle red tint so the row needing attention stands out */
+.transfer-card--failed {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.05);
 }
 
 .transfer-card__row {
@@ -803,4 +897,77 @@ body {
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+/* ---- join row: code input + submit attached as one control ---- */
+
+.join-row {
+  display: flex;
+  gap: 8px;
+}
+
+.join-row .input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- room header: tappable code chip (copies the code) ---- */
+
+.code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.code-chip:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.code-chip:active {
+  transform: scale(0.98);
+}
+
+.code-chip:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.code-chip__icon {
+  color: var(--text-faint);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.code-chip:hover .code-chip__icon {
+  color: var(--text);
+}
+
+.code-chip__icon--ok {
+  color: var(--ok);
+}
+
+/* room header needs the chip to shrink gracefully on narrow screens */
+.shell__header .code-chip {
+  min-width: 0;
+}
+
+.shell__header .code-chip__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
