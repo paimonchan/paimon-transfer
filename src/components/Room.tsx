@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { QrCode, Copy, ArrowLeft, Send } from 'lucide-react'
+import { QrCode, Copy, ArrowLeft, Send, Languages, Settings as SettingsIcon, Lock } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import JSZip from 'jszip'
 import { t, type Lang } from '../lib/strings'
@@ -19,16 +19,26 @@ import {
 } from '../engine/transfer'
 import type { Peer, QuotaState, RoomId, Transfer } from '../engine/types'
 import { connectRoom, type RoomConnection, type SignalStrategy } from '../net/room'
+import { addHistory } from '../lib/history'
 import { PeerList } from './PeerList'
 import { TransferItem } from './TransferItem'
 import { Dropzone } from './Dropzone'
 import { Toasts, type Toast } from './Toast'
+import { Settings, type StrategySetting } from './Settings'
 
 interface RoomProps {
   code: RoomId
   nickname: string
   device: Peer['device']
   lang: Lang
+  setLang: (l: Lang) => void
+  passphrase: string
+  onPassphrase: (p: string) => void
+  strategySetting: StrategySetting
+  relays: string
+  onNickname: (name: string) => void
+  onStrategy: (s: StrategySetting) => void
+  onRelays: (r: string) => void
   onLeave: () => void
 }
 
@@ -37,19 +47,38 @@ const QUOTA_PROBE_DELAY_MS = 2_500
 const SLOW_RELAY_MS = 8_000
 const FALLBACK_STRATEGY_MS = 15_000
 const NO_PEER_GUIDANCE_MS = 10_000
+const PASS_HINT_MS = 12_000
 
-export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
+export function Room({
+  code,
+  nickname,
+  device,
+  lang,
+  setLang,
+  passphrase,
+  onPassphrase,
+  strategySetting,
+  relays,
+  onNickname,
+  onStrategy,
+  onRelays,
+  onLeave,
+}: RoomProps) {
   const [peers, setPeers] = useState<Record<string, Peer>>({})
   const [quotaByPeer, setQuotaByPeer] = useState<Record<string, QuotaState>>({})
   const [transfers, setTransfers] = useState<Record<string, Transfer>>({})
   const [connectState, setConnectState] = useState<'connecting' | 'ready' | 'relay-slow'>('connecting')
   const [showNoPeer, setShowNoPeer] = useState(false)
+  const [showPassHint, setShowPassHint] = useState(false)
+  // effective strategy: URL override ?s= wins, else settings, 'auto' resolves to nostr + fallback
   const [strategy, setStrategy] = useState<SignalStrategy>(() => {
     const s = new URLSearchParams(location.search).get('s')
-    return s === 'mqtt' ? 'mqtt' : 'nostr'
+    if (s === 'nostr' || s === 'mqtt') return s
+    return strategySetting === 'auto' ? 'nostr' : strategySetting
   })
   const [copied, setCopied] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const connRef = useRef<RoomConnection | null>(null)
@@ -59,10 +88,21 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
   const slowTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noPeerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const passHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const historyWritten = useRef(new Set<string>())
   // receiver-side mobile zip bundling: batchId → received blobs (id → {blob, name})
   const batchesRef = useRef(new Map<string, Map<string, { blob: Blob; name: string }>>())
   const toastId = useRef(0)
   const [inApp] = useState(isInAppBrowser)
+
+  const relayUrls = useMemo(
+    () =>
+      relays
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => /^wss?:\/\//.test(s)),
+    [relays],
+  )
 
   const pushToast = useCallback((kind: Toast['kind'], text: string) => {
     const id = ++toastId.current
@@ -323,6 +363,20 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
             }
             return { ...prev, [done.id]: { ...t, status: 'done', progress: 1 } }
           })
+          const tr = handlersRef.current.transfers[done.id]
+          if (tr && !historyWritten.current.has(done.id)) {
+            historyWritten.current.add(done.id)
+            const p = handlersRef.current.peers[tr.peerId]
+            addHistory({
+              id: done.id,
+              name: tr.file.name,
+              size: tr.file.size,
+              direction: 'send',
+              peer: p?.name || t('unknown_peer', lang, { id: tr.peerId.slice(0, 6) }),
+              at: Date.now(),
+              ok: true,
+            })
+          }
           pump()
         },
         onCancel: (cancel) => {
@@ -341,20 +395,20 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
         },
         onData: (payload, id, peerId) => {
           setTransfers((prev) => {
-            const t = prev[id]
-            if (!t || t.direction !== 'receive') return prev
-            const expected = t.file.size
+            const tr = prev[id]
+            if (!tr || tr.direction !== 'receive') return prev
+            const expected = tr.file.size
             if (payload.byteLength !== expected) {
               conn.sendCancel(peerId, id, 'size_mismatch')
-              return { ...prev, [id]: { ...t, status: 'failed', error: 'size_mismatch' } }
+              return { ...prev, [id]: { ...tr, status: 'failed', error: 'size_mismatch' } }
             }
-            const blob = new Blob([payload], { type: t.file.mime || undefined })
+            const blob = new Blob([payload], { type: tr.file.mime || undefined })
             conn.sendDone(peerId, id, expected)
             const next: Record<string, Transfer> = {
               ...prev,
-              [id]: { ...t, status: 'done', progress: 1 },
+              [id]: { ...tr, status: 'done', progress: 1 },
             }
-            const batch = t.batchId
+            const batch = tr.batchId
             if (batch) {
               const batchTransfers = Object.values(next).filter((x) => x.batchId === batch)
               const batchTotal = batchTransfers.reduce((s, x) => s + x.file.size, 0)
@@ -362,16 +416,42 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
                 (x) => x.status === 'failed' || x.status === 'cancelled',
               )
               const allDone = batchTransfers.every((x) => x.status === 'done')
-              if (isMobileDevice() && batchTotal <= maxBytes() && !anyFailed) {
+            if (isMobileDevice() && batchTotal <= maxBytes() && !anyFailed) {
                 const blobs = batchesRef.current.get(batch) ?? new Map()
-                blobs.set(id, { blob, name: t.file.name })
+                blobs.set(id, { blob, name: tr.file.name })
                 batchesRef.current.set(batch, blobs)
                 if (allDone) tryBuildZip(batch, batchTransfers)
+                if (!historyWritten.current.has(id)) {
+                  historyWritten.current.add(id)
+                  const p = handlersRef.current.peers[peerId]
+                  addHistory({
+                    id,
+                    name: tr.file.name,
+                    size: tr.file.size,
+                    direction: 'receive',
+                    peer: p?.name || t('unknown_peer', lang, { id: peerId.slice(0, 6) }),
+                    at: Date.now(),
+                    ok: true,
+                  })
+                }
                 return next
               }
               if (anyFailed) flushBatch(batch)
             }
-            saveBlob(blob, t.file.name)
+            saveBlob(blob, tr.file.name)
+            if (!historyWritten.current.has(id)) {
+              historyWritten.current.add(id)
+              const p = handlersRef.current.peers[peerId]
+              addHistory({
+                id,
+                name: tr.file.name,
+                size: tr.file.size,
+                direction: 'receive',
+                peer: p?.name || t('unknown_peer', lang, { id: peerId.slice(0, 6) }),
+                at: Date.now(),
+                ok: true,
+              })
+            }
             return next
           })
         },
@@ -395,9 +475,11 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
         },
       },
       strategy,
+      { password: passphrase || undefined, relayUrls },
     )
     connRef.current = conn
     setConnectState('connecting')
+    setShowPassHint(false)
 
     // relay-slow banner after 8s with no peers
     slowTimer.current = setTimeout(() => {
@@ -407,9 +489,24 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
     noPeerTimer.current = setTimeout(() => {
       setShowNoPeer(Object.keys(handlersRef.current.peers).length === 0)
     }, NO_PEER_GUIDANCE_MS)
-    // strategy fallback: nostr → mqtt after 15s with no peers (DESIGN.md §15-7)
+    // passphrase hint after 12s with no peers (room may be protected)
+    passHintTimer.current = setTimeout(() => {
+      if (Object.keys(handlersRef.current.peers).length === 0) setShowPassHint(true)
+    }, PASS_HINT_MS)
+    // strategy fallback: nostr → mqtt after 15s with no peers — only when setting
+    // is 'auto' AND room has no passphrase (passphrase rooms need stable signaling:
+    // the peer may still be typing the passphrase; falling back strands them on
+    // different strategies — verified in e2e Aug 2026)
     fallbackTimer.current = setTimeout(() => {
-      if (Object.keys(handlersRef.current.peers).length === 0 && strategy === 'nostr') {
+      if (
+        Object.keys(handlersRef.current.peers).length === 0 &&
+        strategy === 'nostr' &&
+        strategySetting === 'auto' &&
+        !passphrase
+      ) {
+        // note: fallback for passphraseless rooms only — a passphrase room's
+        // peer may still be typing the passphrase (hint flow ends in a reload,
+        // which resets strategy to the initial value anyway)
         pushToast('info', t('switching_signal', lang))
         setStrategy('mqtt')
       }
@@ -421,11 +518,12 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
       if (slowTimer.current) clearTimeout(slowTimer.current)
       if (fallbackTimer.current) clearTimeout(fallbackTimer.current)
       if (noPeerTimer.current) clearTimeout(noPeerTimer.current)
+      if (passHintTimer.current) clearTimeout(passHintTimer.current)
       conn.leave()
       connRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code, strategy])
+  }, [code, strategy, passphrase, relayUrls])
 
   // --- file intake -----------------------------------------------------------
 
@@ -506,14 +604,30 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
         </button>
         <span className="mono" style={{ fontSize: 18, fontWeight: 500 }}>
           {code}
+          {passphrase ? (
+            <span className="badge" style={{ marginLeft: 8, verticalAlign: 'middle' }}>
+              <Lock size={11} aria-hidden style={{ verticalAlign: -1 }} /> {t('room_protected', lang)}
+            </span>
+          ) : null}
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            aria-label={lang === 'en' ? 'Bahasa Indonesia' : 'Switch to English'}
+            onClick={() => setLang(lang === 'en' ? 'id' : 'en')}
+          >
+            <Languages size={18} aria-hidden />
+          </button>
           <button type="button" className="btn btn--ghost" aria-label={t('copy', lang)} onClick={copyCode}>
             <Copy size={18} aria-hidden />
             {copied ? t('copied', lang) : null}
           </button>
           <button type="button" className="btn btn--ghost" aria-label={t('qr_title', lang)} onClick={() => setQrOpen(true)}>
             <QrCode size={18} aria-hidden />
+          </button>
+          <button type="button" className="btn btn--ghost" aria-label={t('settings', lang)} onClick={() => setSettingsOpen(true)}>
+            <SettingsIcon size={18} aria-hidden />
           </button>
         </div>
       </header>
@@ -561,6 +675,42 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
       {showNoPeer && Object.keys(peers).length === 0 ? (
         <div className="card" role="status" style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
           {t('no_peer_yet', lang)}
+        </div>
+      ) : null}
+
+      {showPassHint && Object.keys(peers).length === 0 ? (
+        <div className="card" role="status" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('no_peer_hint', lang)}</span>
+          <form
+            style={{ display: 'flex', gap: 8 }}
+            onSubmit={(e) => {
+              e.preventDefault()
+              // read from the form, not state — avoids the stale-closure race
+              // when the user submits immediately after typing
+              const v = new FormData(e.currentTarget).get('passphrase')
+              if (typeof v === 'string' && v.trim()) {
+                onPassphrase(v.trim())
+                // trystero's leave→rejoin with a new password keeps the failed
+                // handshake state from the passphraseless attempt (e2e Aug 2026).
+                // Reload: fresh join with the password on first connect.
+                setTimeout(() => location.reload(), 100)
+              }
+            }}
+          >
+            <input
+              className="input"
+              type="password"
+              name="passphrase"
+              defaultValue=""
+              maxLength={64}
+              placeholder="••••••••"
+              aria-label={t('passphrase', lang)}
+            />
+            <button type="submit" className="btn btn--primary btn--sm">
+              <Lock size={13} aria-hidden />
+              {t('retry', lang)}
+            </button>
+          </form>
         </div>
       ) : null}
 
@@ -627,6 +777,20 @@ export function Room({ code, nickname, device, lang, onLeave }: RoomProps) {
             </button>
           ) : null}
         </>
+      ) : null}
+
+      {settingsOpen ? (
+        <Settings
+          lang={lang}
+          onLang={setLang}
+          nickname={nickname}
+          onNickname={onNickname}
+          strategy={strategySetting}
+          onStrategy={onStrategy}
+          relays={relays}
+          onRelays={onRelays}
+          onClose={() => setSettingsOpen(false)}
+        />
       ) : null}
 
       {qrOpen ? (

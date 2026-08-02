@@ -70,9 +70,17 @@ export function connectRoom(
   code: RoomId,
   handlers: RoomHandlers,
   strategy: SignalStrategy = 'nostr',
+  opts: { password?: string; relayUrls?: string[] } = {},
 ): RoomConnection {
   const join = strategy === 'mqtt' ? joinMqtt : joinNostr
-  const room = join({ appId: APP_ID }, code)
+  const config = {
+    appId: APP_ID,
+    password: opts.password || undefined,
+    ...(strategy === 'nostr' && opts.relayUrls && opts.relayUrls.length > 0
+      ? { relayConfig: { urls: opts.relayUrls } }
+      : {}),
+  }
+  const room = join(config, code)
 
   const helloAction = room.makeAction<PeerMeta>('pt-hello')
   const offerAction = room.makeAction<FileOffer>('pt-offer')

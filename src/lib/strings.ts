@@ -83,6 +83,33 @@ const strings: Record<string, { en: string; id: string }> = {
     en: 'Open in Safari/Chrome to save files',
     id: 'Buka di Safari/Chrome untuk menyimpan file',
   },
+  settings: { en: 'Settings', id: 'Pengaturan' },
+  language: { en: 'Language', id: 'Bahasa' },
+  strategy: { en: 'Signaling', id: 'Sinyal' },
+  strategy_auto: { en: 'Auto (Nostr → MQTT)', id: 'Otomatis (Nostr → MQTT)' },
+  strategy_nostr: { en: 'Nostr only', id: 'Nostr saja' },
+  strategy_mqtt: { en: 'MQTT only', id: 'MQTT saja' },
+  relays: { en: 'Nostr relays', id: 'Relay Nostr' },
+  relays_hint: {
+    en: 'Comma-separated wss:// URLs (advanced)',
+    id: 'URL wss:// dipisah koma (lanjutan)',
+  },
+  save: { en: 'Save', id: 'Simpan' },
+  passphrase: { en: 'Passphrase', id: 'Frasa sandi' },
+  passphrase_optional: { en: 'Passphrase (optional)', id: 'Frasa sandi (opsional)' },
+  passphrase_hint: {
+    en: 'Only people with the passphrase can join this room',
+    id: 'Hanya yang punya frasa sandi yang bisa gabung room ini',
+  },
+  room_protected: { en: 'Protected', id: 'Terlindungi' },
+  no_peer_hint: {
+    en: 'No peer found — the room may be passphrase-protected. Enter the passphrase and retry:',
+    id: 'Peer tidak ditemukan — mungkin room dilindungi frasa sandi. Masukkan frasa sandi lalu coba lagi:',
+  },
+  retry: { en: 'Retry', id: 'Coba lagi' },
+  recent: { en: 'Recent transfers', id: 'Transfer terakhir' },
+  clear: { en: 'Clear', id: 'Bersihkan' },
+  no_history: { en: 'No transfers yet', id: 'Belum ada transfer' },
 }
 
 export function t(key: string, lang: Lang, vars?: Record<string, string | number>): string {
