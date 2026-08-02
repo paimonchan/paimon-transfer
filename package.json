@@ -11,6 +11,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@trystero-p2p/mqtt": "^0.25.3",
+    "jszip": "^3.10.1",
     "lucide-react": "^1.28.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",

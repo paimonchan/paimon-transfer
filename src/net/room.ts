@@ -5,7 +5,8 @@
 //   send(data, { target?, metadata?, onProgress? })
 //   getPeers(): Record<peerId, RTCPeerConnection>  — used for quota detection
 
-import { joinRoom, selfId } from 'trystero/nostr'
+import { joinRoom as joinNostr } from 'trystero/nostr'
+import { joinRoom as joinMqtt } from '@trystero-p2p/mqtt'
 import type {
   FileAccept,
   FileCancel,
@@ -18,6 +19,8 @@ import type {
 } from '../engine/types'
 
 export const APP_ID = 'paimon_transfer'
+
+export type SignalStrategy = 'nostr' | 'mqtt'
 
 export type PeerMeta = {
   name: string
@@ -46,7 +49,7 @@ export interface RoomHandlers {
 }
 
 export interface RoomConnection {
-  selfId: string
+  strategy: SignalStrategy
   sendHello: (meta: PeerMeta) => void
   sendOffer: (peerId: string, offer: FileOffer) => void
   sendAccept: (peerId: string, id: string) => void
@@ -63,8 +66,13 @@ export interface RoomConnection {
   leave: () => void
 }
 
-export function connectRoom(code: RoomId, handlers: RoomHandlers): RoomConnection {
-  const room = joinRoom({ appId: APP_ID }, code)
+export function connectRoom(
+  code: RoomId,
+  handlers: RoomHandlers,
+  strategy: SignalStrategy = 'nostr',
+): RoomConnection {
+  const join = strategy === 'mqtt' ? joinMqtt : joinNostr
+  const room = join({ appId: APP_ID }, code)
 
   const helloAction = room.makeAction<PeerMeta>('pt-hello')
   const offerAction = room.makeAction<FileOffer>('pt-offer')
@@ -89,7 +97,7 @@ export function connectRoom(code: RoomId, handlers: RoomHandlers): RoomConnectio
     handlers.onDataProgress(percent, metaId(metadata), peerId)
 
   return {
-    selfId,
+    strategy,
     sendHello: (meta) => void helloAction.send(meta),
     sendOffer: (peerId, offer) => void offerAction.send(offer, { target: peerId }),
     sendAccept: (peerId, id) => void acceptAction.send({ id }, { target: peerId }),

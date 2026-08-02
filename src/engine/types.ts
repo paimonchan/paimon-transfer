@@ -41,6 +41,7 @@ export interface Transfer {
   speedBps: number // EMA-smoothed
   peerId: string
   quota: QuotaState
+  batchId?: string // sender-side group (one Send click = one batch; used for mobile zip bundling)
   error?: string // copy-deck key
 }
 
@@ -55,6 +56,7 @@ export interface RoomState {
 export type FileOffer = {
   id: string
   file: TransferFile
+  batchId: string
 } & { [key: string]: JsonValue }
 
 export type FileAccept = { id: string } & { [key: string]: JsonValue }

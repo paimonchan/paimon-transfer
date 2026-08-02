@@ -25,6 +25,7 @@ export function createTransfer(
     direction: 'send' | 'receive'
     file: TransferFile
     peerId: string
+    batchId?: string
   },
   status: Transfer['status'] = 'queued',
 ): Transfer {
