@@ -3,6 +3,7 @@ import { Home, Room } from './components'
 import { usePersistentState } from './hooks/usePersistentState'
 import { detectLang, type Lang } from './lib/strings'
 import { isValidRoomCode, normalizeRoomInput, generateRoomCode } from './engine/roomCode'
+import { isMobileDevice } from './engine/transfer'
 import type { RoomId } from './engine/types'
 
 function deviceDefaultName(): string {
@@ -15,6 +16,7 @@ function deviceDefaultName(): string {
 export default function App() {
   const [lang] = useState<Lang>(detectLang)
   const [nickname, setNickname] = usePersistentState('pt-nickname', deviceDefaultName())
+  const [nicknameConfirmed, setNicknameConfirmed] = usePersistentState('pt-nickname-confirmed', false)
   const [screen, setScreen] = useState<'home' | 'room'>('home')
   const [roomCode, setRoomCode] = useState<RoomId | null>(null)
 
@@ -46,14 +48,24 @@ export default function App() {
   }
 
   if (screen === 'room' && roomCode) {
-    return <Room code={roomCode} lang={lang} onLeave={leaveRoom} />
+    return (
+      <Room
+        code={roomCode}
+        nickname={nickname}
+        device={isMobileDevice() ? 'mobile' : 'desktop'}
+        lang={lang}
+        onLeave={leaveRoom}
+      />
+    )
   }
 
   return (
     <Home
       lang={lang}
       nickname={nickname}
+      nicknameConfirmed={nicknameConfirmed}
       onNickname={setNickname}
+      onConfirmNickname={() => setNicknameConfirmed(true)}
       onCreateRoom={createRoom}
       onJoinRoom={joinRoom}
     />

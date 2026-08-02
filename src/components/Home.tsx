@@ -7,12 +7,14 @@ import { isValidRoomCode, normalizeRoomInput } from '../engine/roomCode'
 interface HomeProps {
   lang: Lang
   nickname: string
+  nicknameConfirmed: boolean
   onNickname: (name: string) => void
+  onConfirmNickname: () => void
   onCreateRoom: () => void
   onJoinRoom: (code: string) => void
 }
 
-export function Home({ lang, nickname, onNickname, onCreateRoom, onJoinRoom }: HomeProps) {
+export function Home({ lang, nickname, nicknameConfirmed, onNickname, onConfirmNickname, onCreateRoom, onJoinRoom }: HomeProps) {
   const [codeInput, setCodeInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [onboardingDismissed, setOnboardingDismissed] = usePersistentState('pt-onboarding-dismissed', false)
@@ -31,9 +33,10 @@ export function Home({ lang, nickname, onNickname, onCreateRoom, onJoinRoom }: H
   function submitName(e: React.FormEvent) {
     e.preventDefault()
     setEditingName(false)
+    onConfirmNickname()
   }
 
-  const showNamePrompt = editingName || nickname.trim() === ''
+  const showNamePrompt = editingName || !nicknameConfirmed
 
   return (
     <div className="shell">

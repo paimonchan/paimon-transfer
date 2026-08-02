@@ -354,3 +354,257 @@ body {
   padding: 12px;
   border-radius: 10px;
 }
+
+/* ---- peer cards ---- */
+
+.card--peer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.peer-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+}
+
+.peer-lan {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ok);
+}
+
+/* ---- quota badge ---- */
+
+.quota-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.quota-badge[data-quota='lan'] {
+  color: var(--ok);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.quota-badge[data-quota='internet'] {
+  color: var(--warn);
+  border-color: rgba(231, 172, 52, 0.35);
+}
+
+/* ---- dropzone ---- */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.dropzone:hover,
+.dropzone:focus-visible {
+  background: var(--surface);
+  border-color: var(--accent);
+}
+
+.dropzone--over {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* ---- transfer cards ---- */
+
+.transfer-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transfer-card__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.transfer-card__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.transfer-card__name {
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transfer-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.transfer-card__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.status-text[data-kind='muted'] {
+  color: var(--text-muted);
+}
+
+.status-text[data-kind='info'] {
+  color: var(--text);
+}
+
+.status-text[data-kind='ok'] {
+  color: var(--ok);
+}
+
+.status-text[data-kind='err'] {
+  color: var(--danger);
+}
+
+/* ---- progress ---- */
+
+.progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 150ms var(--ease-out);
+}
+
+/* ---- small spinner + small button ---- */
+
+.spinner--sm {
+  width: 12px;
+  height: 12px;
+  border-width: 1.5px;
+}
+
+.btn--sm {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+/* ---- toasts ---- */
+
+.toasts {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(420px, calc(100vw - 32px));
+  z-index: 100;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: 13px;
+  box-shadow: var(--shadow-pop);
+  animation: slide-up 0.2s var(--ease-out);
+}
+
+.toast--error {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fecaca;
+}
+
+.toast--ok {
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #bbf7d0;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- banner (in-app browser warning) ---- */
+
+.banner {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(231, 172, 52, 0.45);
+  background: rgba(231, 172, 52, 0.08);
+  color: var(--warn);
+  font-size: 13px;
+  text-align: center;
+}

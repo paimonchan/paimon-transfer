@@ -47,6 +47,38 @@ const strings: Record<string, { en: string; id: string }> = {
     id: 'Kode room tidak dikenali — gunakan PT-XXXXXX',
   },
   room_live: { en: 'room open', id: 'room terbuka' },
+  peers: { en: 'Peers: {n}', id: 'Peer: {n}' },
+  unknown_peer: { en: 'Peer {id}', id: 'Peer {id}' },
+  dropzone_hint: { en: 'Drop files here or browse', id: 'Letakkan file di sini atau pilih' },
+  send_files: { en: 'Send {n} file(s) → {peer}', id: 'Kirim {n} file → {peer}' },
+  no_files: { en: 'Add files to send', id: 'Tambahkan file untuk dikirim' },
+  send: { en: 'Send', id: 'Kirim' },
+  accept: { en: 'Accept', id: 'Terima' },
+  decline: { en: 'Decline', id: 'Tolak' },
+  cancel: { en: 'Cancel', id: 'Batalkan' },
+  offer_incoming: {
+    en: '{name} · {size} from {peer}',
+    id: '{name} · {size} dari {peer}',
+  },
+  sending: { en: 'Sending', id: 'Mengirim' },
+  receiving: { en: 'Receiving', id: 'Menerima' },
+  transfer_done: { en: 'Saved · {size}', id: 'Tersimpan · {size}' },
+  transfer_failed: { en: 'Transfer failed', id: 'Transfer gagal' },
+  peer_left: {
+    en: 'Peer left — transfer interrupted',
+    id: 'Peer keluar — transfer terputus',
+  },
+  size_mismatch: {
+    en: 'Size mismatch — please resend',
+    id: 'Ukuran tidak cocok — kirim ulang',
+  },
+  timeout: { en: 'No response — cancelled', id: 'Tidak ada respons — dibatalkan' },
+  file_too_big: { en: 'Too large — max {max}', id: 'Terlalu besar — maks {max}' },
+  files_too_many: { en: 'Max {n} files per batch', id: 'Maks {n} file per batch' },
+  inapp_banner: {
+    en: 'Open in Safari/Chrome to save files',
+    id: 'Buka di Safari/Chrome untuk menyimpan file',
+  },
 }
 
 export function t(key: string, lang: Lang, vars?: Record<string, string | number>): string {

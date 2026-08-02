@@ -22,11 +22,15 @@ export interface Peer {
   online: boolean
 }
 
-export interface TransferFile {
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+
+// Wire payloads — must satisfy trystero's DataPayload constraint
+// ({ [key: string]: JsonValue }), so they are types with index signatures.
+export type TransferFile = {
   name: string
   size: number // bytes
   mime: string
-}
+} & { [key: string]: JsonValue }
 
 export interface Transfer {
   id: string // crypto.randomUUID()
@@ -48,27 +52,12 @@ export interface RoomState {
   connectState: 'connecting' | 'ready' | 'relay-slow' | 'failed'
 }
 
-// net/room.ts — trystero wiring (API verified from trystero v0.25.3, Aug 2 2026)
-//   joinRoom({appId: 'paimon_transfer'}, roomId)   — appId REQUIRED, namespaces rooms globally
-//   const action = room.makeAction('file')         — returns { send, onReceiveProgress }
-//   action.send(payload, { target: [peerIds], metadata, onProgress })
-//   action.onReceiveProgress = (percent, {peerId, metadata}) => …
-export interface FileOffer {
+export type FileOffer = {
   id: string
   file: TransferFile
-}
-export interface FileAccept {
-  id: string
-}
-export interface FileDecline {
-  id: string
-}
-export interface FileDone {
-  id: string
-  size: number
-}
-export interface FileCancel {
-  id: string
-  reason?: string
-}
-// file:chunk — binary payload + metadata { id } (trystero auto-chunks at 16 KiB, emits progress)
+} & { [key: string]: JsonValue }
+
+export type FileAccept = { id: string } & { [key: string]: JsonValue }
+export type FileDecline = { id: string } & { [key: string]: JsonValue }
+export type FileDone = { id: string; size: number } & { [key: string]: JsonValue }
+export type FileCancel = { id: string; reason: string | null } & { [key: string]: JsonValue }
