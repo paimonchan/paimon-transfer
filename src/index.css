@@ -967,22 +967,30 @@ body {
   font-weight: 600;
 }
 
-/* sticky modal header — stays visible while long content scrolls */
+/* modal header lives OUTSIDE the scroll area — text never slides under it.
+   hairline marks the boundary; only .modal__body scrolls. */
 .modal__header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: -22px -22px 0;
-  padding: 22px 22px 12px;
-  background: var(--surface);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .modal__header h2 {
   font-size: 17px;
   margin: 0;
+}
+
+/* scrollable region between fixed header and fixed footer action */
+.modal__body {
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overscroll-behavior: contain;
 }
 
 /* ---- settings sections ---- */
@@ -1050,7 +1058,7 @@ body {
   flex-direction: column;
   gap: 14px;
   max-height: min(560px, 85vh);
-  overflow-y: auto;
+  overflow: hidden; /* header/save stay put; .modal__body does the scrolling */
 }
 
 /* ---- history list (home) ---- */

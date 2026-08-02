@@ -64,6 +64,7 @@ export function Settings({
           </button>
         </div>
 
+        <div className="modal__body">
         <div className="settings-section" role="group" aria-label={t('section_profile', lang)}>
           <span className="section-label">{t('section_profile', lang)}</span>
           <label className="field-label">
@@ -133,6 +134,7 @@ export function Settings({
             />
             <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>{t('relays_hint', lang)}</span>
           </label>
+        </div>
         </div>
 
         <button type="button" className="btn btn--primary" onClick={save}>
